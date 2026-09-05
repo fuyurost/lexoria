@@ -1,0 +1,92 @@
+name: lexoria
+
+# Lexoria production stack — three long-running services only:
+#   db (postgres:16) + api (FastAPI / uv / uvicorn :8000) + web (nginx: SPA + reverse proxy).
+# No worker / Celery / Redis by design.
+#
+# Usage:
+#   cp .env.example .env          # then edit POSTGRES_PASSWORD / JWT_SECRET, ...
+#   docker compose up -d --build
+#
+# HTTPS is OFF by default (plain HTTP on ${HTTP_PORT}). To enable TLS:
+# put certs in infra/nginx/certs and set NGINX_CONF=./infra/nginx/nginx.https.example.conf
+# (see README "HTTPS").
+
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-lexoria}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-lexoria}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lexoria} -d ${POSTGRES_DB:-lexoria}"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    # Deliberately NO host port mapping: the DB is reachable only on the
+    # internal compose network. For a local dev DB see docker-compose.dev.yml.
+
+  api:
+    build:
+      context: ./apps/api
+    image: lexoria/api
+    restart: unless-stopped
+    environment:
+      # In-container URL: host is the compose service name `db`. The scheme
+      # matches the app's synchronous SQLAlchemy driver (psycopg v3).
+      # URL-encode the password if it contains special characters.
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-lexoria}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@db:5432/${POSTGRES_DB:-lexoria}
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:8080}
+      COOKIE_SECURE: "${COOKIE_SECURE:-false}"
+      ALLOW_REGISTRATION: "${ALLOW_REGISTRATION:-true}"
+      PDF_STORAGE_DIR: ${PDF_STORAGE_DIR:-/data/pdfs}
+    volumes:
+      # Private PDF storage — mounted on the API ONLY. nginx/web never sees it,
+      # so generated PDFs are never served statically.
+      - pdfs:${PDF_STORAGE_DIR:-/data/pdfs}
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3).status == 200 else 1)"]
+      interval: 15s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+
+  web:
+    build:
+      # pnpm monorepo: the SPA needs workspace deps (packages/api-client),
+      # so the build context is the repo root; Dockerfile lives in apps/web.
+      context: .
+      dockerfile: apps/web/Dockerfile
+    image: lexoria/web
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "${HTTP_PORT:-8080}:80"
+      - "${HTTPS_PORT:-8443}:443"
+    volumes:
+      # nginx config + TLS certs live in infra/nginx and are bind-mounted, so
+      # config changes need no rebuild. HTTPS becomes active only once the TLS
+      # config (NGINX_CONF) and certs are in place — see README.
+      - ${NGINX_CONF:-./infra/nginx/nginx.conf}:/etc/nginx/nginx.conf:ro
+      - ./infra/nginx/certs:/etc/nginx/certs:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:80/ || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
+
+volumes:
+  pgdata:
+  pdfs:

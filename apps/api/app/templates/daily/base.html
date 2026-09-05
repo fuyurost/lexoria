@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+{#- Shared daily-sheet document skeleton. Rows are rendered by the concrete
+    template blocks (compact.html / test.html) in `rows`. User-provided text
+    (lemma, phonetic, definitions) is ALWAYS autoescaped by Jinja here. -#}
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>Daily Sheet {{ sheet_date }}</title>
+  <style>
+{%- if paper_size == "a5" %}
+    @page { size: A5; margin: 10mm 11mm 13mm; }
+{%- else %}
+    @page { size: A4; margin: 14mm 16mm 17mm; }
+{%- endif %}
+{{ stylesheet|safe }}
+  </style>
+</head>
+<body class="paper-{{ paper_size }} cols-{{ columns }}">
+  <header class="sheet-head">
+    <h1>Daily Sheet<span class="date">{{ sheet_date }}</span></h1>
+    <p class="counts">
+      <span>复习 <b>{{ review_count }}</b></span>
+      <span>新词 <b>{{ new_count }}</b></span>
+    </p>
+  </header>
+  <main>
+    {%- block rows %}{% endblock %}
+  </main>
+  {%- if hard_rows %}
+  <footer class="hard-block">
+    <h2>Hard words<span>（近 7 天标记 hard，重点复习并勾选）</span></h2>
+    <ul class="hard-list">
+      {%- for w in hard_rows %}
+      <li><span class="box"></span><span class="hw-lemma">{{ w.lemma }}</span>{% if w.phonetic %}<span class="hw-phonetic">{{ w.phonetic }}</span>{% endif %}</li>
+      {%- endfor %}
+    </ul>
+  </footer>
+  {%- endif %}
+</body>
+</html>

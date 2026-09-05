@@ -1,0 +1,30 @@
+{%- extends "base.html" %}
+{#- compact: word + personal phonetic + up to 2 senses; every row carries a
+    review checkbox; recently-hard words are recapped at the bottom. -#}
+{%- block rows %}
+  <ol class="word-list">
+    {%- for w in rows %}
+    <li class="word{% if w.is_new %} is-new{% endif %}">
+      <span class="box" aria-hidden="true"></span>
+      <div class="word-main">
+        <div class="word-head">
+          <span class="no">{{ w.no }}.</span>
+          <span class="lemma">{{ w.lemma }}</span>
+          {%- if w.phonetic %}<span class="phonetic">{{ w.phonetic }}</span>{% endif %}
+        </div>
+        {%- if w.senses %}
+        <ul class="senses">
+          {%- for s in w.senses %}
+          <li class="sense">
+            {%- if s.part_of_speech %}<span class="pos">{{ s.part_of_speech }}</span>{% endif %}
+            {%- if s.definition_zh %}<span class="zh">{{ s.definition_zh }}</span>{% endif %}
+            {%- if s.definition_en %}<span class="en">{{ s.definition_en }}</span>{% endif %}
+          </li>
+          {%- endfor %}
+        </ul>
+        {%- endif %}
+      </div>
+    </li>
+    {%- endfor %}
+  </ol>
+{%- endblock %}

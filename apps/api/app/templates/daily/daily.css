@@ -1,0 +1,223 @@
+/* Daily sheet print styles (shared by the compact and test templates).
+
+Embedded inline by app/services/pdf.py into a single self-contained HTML
+document: no external stylesheets, images, fonts or other network resources,
+so WeasyPrint never performs a fetch and the preview HTML is fully static.
+
+Font stack prefers the open-source Noto Sans CJK SC (installed in the
+production image via fonts-noto-cjk) and degrades to the platform CJK fonts.
+*/
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Noto Sans CJK SC", "Noto Sans SC", "Source Han Sans SC",
+    "Microsoft YaHei", "PingFang SC", "WenQuanYi Micro Hei", sans-serif;
+  color: #14181c;
+  font-size: 10.5pt;
+  line-height: 1.45;
+}
+
+/* --- header --------------------------------------------------------- */
+.sheet-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  border-bottom: 1.4pt solid #1f2933;
+  padding-bottom: 3pt;
+  margin-bottom: 8pt;
+}
+
+.sheet-head h1 {
+  margin: 0;
+  font-size: 15pt;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.sheet-head h1 .date {
+  margin-left: 4pt;
+  font-weight: 600;
+  color: #3e4c59;
+}
+
+.sheet-head .counts {
+  margin: 0;
+  font-size: 10pt;
+  color: #3e4c59;
+}
+
+.sheet-head .counts span {
+  margin-left: 8pt;
+}
+
+.sheet-head .counts b {
+  color: #14181c;
+}
+
+/* --- word rows ------------------------------------------------------ */
+ol.word-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+body.cols-2 .word-list {
+  column-count: 2;
+  column-gap: 9mm;
+}
+
+li.word {
+  break-inside: avoid;
+  display: flex;
+  align-items: flex-start;
+  padding: 3.5pt 0 4pt;
+  border-bottom: 0.5pt solid #cbd2d9;
+}
+
+li.word .box {
+  flex: 0 0 auto;
+  width: 9.5pt;
+  height: 9.5pt;
+  margin: 1.5pt 6pt 0 1pt;
+  border: 1pt solid #1f2933;
+  border-radius: 1pt;
+}
+
+.word-main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.word-head {
+  display: flex;
+  align-items: baseline;
+}
+
+.word-head .no {
+  font-size: 8.5pt;
+  color: #7b8794;
+  margin-right: 3.5pt;
+}
+
+.word-head .lemma {
+  font-size: 11.5pt;
+  font-weight: 700;
+}
+
+li.word.is-new .word-head .lemma::after {
+  content: " 新";
+  font-size: 6.5pt;
+  font-weight: 600;
+  color: #8b5e00;
+}
+
+.word-head .phonetic {
+  margin-left: 6pt;
+  font-size: 9pt;
+  color: #5f6b7a;
+}
+
+ul.senses {
+  list-style: none;
+  margin: 2pt 0 0;
+  padding: 0;
+}
+
+ul.senses li.sense {
+  font-size: 9.5pt;
+  margin-top: 1pt;
+}
+
+ul.senses .pos {
+  font-style: italic;
+  color: #5f6b7a;
+  margin-right: 4pt;
+}
+
+ul.senses .zh {
+  margin-right: 4pt;
+}
+
+ul.senses .en {
+  color: #52606d;
+}
+
+/* --- test template: English -> blank Chinese writing line ----------- */
+li.test-word {
+  display: block;
+  padding: 4pt 0 6pt;
+}
+
+li.test-word .word-head {
+  margin-bottom: 2pt;
+}
+
+li.test-word .write-line {
+  border-bottom: 0.6pt dotted #7b8794;
+  height: 11pt;
+  margin-left: 9pt;
+}
+
+/* --- bottom: hard words recap with review checkboxes ---------------- */
+.hard-block {
+  margin-top: 12pt;
+  border-top: 1pt solid #1f2933;
+  padding-top: 6pt;
+}
+
+.hard-block h2 {
+  margin: 0 0 4pt;
+  font-size: 9.5pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.hard-block h2 span {
+  text-transform: none;
+  font-weight: 500;
+  color: #7b8794;
+  font-size: 8.5pt;
+}
+
+ul.hard-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3pt 12pt;
+}
+
+ul.hard-list li {
+  display: flex;
+  align-items: center;
+  break-inside: avoid;
+}
+
+ul.hard-list .box {
+  width: 8.5pt;
+  height: 8.5pt;
+  margin-right: 4.5pt;
+  border: 1pt solid #1f2933;
+  border-radius: 1pt;
+}
+
+ul.hard-list .hw-lemma {
+  font-weight: 600;
+  font-size: 10pt;
+}
+
+ul.hard-list .hw-phonetic {
+  margin-left: 5pt;
+  font-size: 8.5pt;
+  color: #5f6b7a;
+}

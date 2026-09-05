@@ -1,0 +1,33 @@
+name: lexoria-dev
+
+# Local development: runs ONLY Postgres 16 with host port 5432 published
+# (bound to 127.0.0.1), so the API and alembic run directly on the host:
+#
+#   docker compose -f docker-compose.dev.yml up -d
+#   cd apps/api && uv run alembic upgrade head && uv run uvicorn app.main:app --reload
+#   cd apps/web && npm run dev
+#
+# DATABASE_URL from .env (localhost:5432) applies to host processes.
+# Default password below is used only when POSTGRES_PASSWORD is unset.
+
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-lexoria}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-lexoria_dev_password}
+      POSTGRES_DB: ${POSTGRES_DB:-lexoria}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lexoria} -d ${POSTGRES_DB:-lexoria}"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+volumes:
+  pgdata:

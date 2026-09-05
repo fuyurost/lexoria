@@ -1,0 +1,18 @@
+{%- extends "base.html" %}
+{#- test: fixed English -> blank Chinese writing line. Definitions are hidden;
+    the learner writes the translation on the dotted line. Hard words are
+    recapped with a review checkbox at the bottom (base.html). -#}
+{%- block rows %}
+  <ol class="word-list">
+    {%- for w in rows %}
+    <li class="word test-word">
+      <div class="word-head">
+        <span class="no">{{ w.no }}.</span>
+        <span class="lemma">{{ w.lemma }}</span>
+        {%- if w.phonetic %}<span class="phonetic">{{ w.phonetic }}</span>{% endif %}
+      </div>
+      <div class="write-line" aria-hidden="true"></div>
+    </li>
+    {%- endfor %}
+  </ol>
+{%- endblock %}

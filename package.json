@@ -1,0 +1,19 @@
+{
+  "name": "lexoria",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Lexiora — vocabulary learning workspace. Monorepo (pnpm workspaces).",
+  "packageManager": "pnpm@11.17.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @lexoria/web dev",
+    "dev:api-client": "pnpm --filter @lexoria/api-client test --watch",
+    "build": "pnpm --filter @lexoria/api-client build && pnpm --filter @lexoria/web build",
+    "typecheck": "pnpm --filter @lexoria/api-client build && pnpm --filter @lexoria/api-client typecheck && pnpm --filter @lexoria/web typecheck",
+    "test": "pnpm -r test",
+    "check": "pnpm typecheck && pnpm test && pnpm build",
+    "generate:openapi": "pnpm --filter @lexoria/api-client generate:openapi"
+  }
+}
