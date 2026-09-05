@@ -45,6 +45,8 @@ RUN groupadd --system app && useradd --system --gid app --home-dir /app app \
 
 # Runtime uv cache must be writable by the non-root app user (/app is root-owned).
 ENV UV_CACHE_DIR=/tmp/uv-cache
+# Belt-and-braces: /app/.cache pre-created & owned by app (uv fallback location).
+RUN mkdir -p /app/.cache && chown -R app:app /app/.cache
 
 USER app
 EXPOSE 8000
