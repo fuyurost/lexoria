@@ -43,9 +43,12 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 RUN groupadd --system app && useradd --system --gid app --home-dir /app app \
     && mkdir -p /data/pdfs && chown app:app /data/pdfs
 
+# Runtime uv cache must be writable by the non-root app user (/app is root-owned).
+ENV UV_CACHE_DIR=/tmp/uv-cache
+
 USER app
 EXPOSE 8000
 
 # Migrate, then serve. Requires DATABASE_URL (see docker-compose.yml).
 # `--proxy-headers` lets uvicorn honor X-Forwarded-* set by nginx.
-CMD ["sh", "-c", "uv run alembic upgrade head && exec uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips='*'"]
+CMD ["sh", "-c", "uv run --no-sync alembic upgrade head && exec uv run --no-sync uvicorn app.main:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips='*'"]
