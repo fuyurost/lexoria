@@ -350,7 +350,7 @@ def _run_selection(
         new_count=config["new_count"],
         requested_source_ids=requested,
     )
-    selected_rows = _make_rows(result.items, by_id)
+    selected_rows = _make_rows(result, by_id)
     return config, selected_rows, result.warnings, sheet_date
 
 
